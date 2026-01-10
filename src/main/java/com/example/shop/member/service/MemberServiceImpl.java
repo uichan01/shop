@@ -2,9 +2,8 @@ package com.example.shop.member.service;
 
 import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
-import com.example.shop.member.dto.request.SignInRequest;
+import com.example.shop.member.dto.request.LoginRequest;
 import com.example.shop.member.dto.request.SignUpRequest;
-import com.example.shop.member.dto.response.SignInResponse;
 import com.example.shop.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,7 +32,7 @@ public class MemberServiceImpl implements MemberService{
                 .name(name)
                 .email(email)
                 .password(bCryptPasswordEncoder.encode(password))
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .build();
 
         memberRepository.save(memberEntity);
@@ -52,7 +51,7 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public SignInResponse signIn(SignInRequest request) {
-        return null;
+    public boolean signIn(LoginRequest request) {
+        return true;
     }
 }

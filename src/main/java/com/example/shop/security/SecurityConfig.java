@@ -1,22 +1,38 @@
 package com.example.shop.security;
 
+import com.example.shop.security.jwt.JWTFilter;
+import com.example.shop.security.jwt.JWTUtil;
+import com.example.shop.security.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
+@EnableWebSecurity
 public class SecurityConfig {
+
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final JWTUtil jwtUtil;
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
 
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+
+        return configuration.getAuthenticationManager();
     }
 
     @Bean
@@ -33,9 +49,16 @@ public class SecurityConfig {
         //경로별 인가
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/member/sign-up", "/", "/member/login","/h2-console/**").permitAll() //모두 허용
-                        .requestMatchers("/admin").hasRole("ADMIN") //admin 만
+                        .requestMatchers("/member/sign-up", "/", "/login","/h2-console/**").permitAll() //모두 허용
+                        .requestMatchers("/admin/**").hasRole("ADMIN") //admin 만
                         .anyRequest().authenticated()); //인증된 사용자만
+
+        //jwt 필터
+        http
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+        //로그인 필터
+        http
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         //세션 stateless 로
         http
