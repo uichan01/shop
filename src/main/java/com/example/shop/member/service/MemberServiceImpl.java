@@ -4,10 +4,14 @@ import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
 import com.example.shop.member.dto.request.LoginRequest;
 import com.example.shop.member.dto.request.SignUpRequest;
+import com.example.shop.member.dto.response.MemberInfoResponse;
 import com.example.shop.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -21,18 +25,23 @@ public class MemberServiceImpl implements MemberService{
         String name = request.getName();
         String email = request.getEmail();
         String password = request.getPassword();
+        Role signUpUserRole = request.getRole();
 
         Boolean isExist = memberRepository.existsByEmail(email);
 
         if (isExist) {
-            return false;
+            throw new IllegalStateException("이미 존재하는 이메일입니다.");
+        }
+
+        if (signUpUserRole == Role.ROLE_ADMIN) {
+            throw new IllegalArgumentException("관리자 권한으로 가입할 수 없습니다.");
         }
 
         MemberEntity memberEntity = MemberEntity.builder()
                 .name(name)
                 .email(email)
                 .password(bCryptPasswordEncoder.encode(password))
-                .role(Role.ROLE_USER)
+                .role(signUpUserRole)
                 .build();
 
         memberRepository.save(memberEntity);
@@ -41,17 +50,26 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public MemberEntity getMember(Long memberId) {
-        return null;
+    public MemberInfoResponse getMember(String email) {
+
+        MemberEntity member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("회원이 존재하지 않습니다."));
+
+        MemberInfoResponse memberInfo = MemberInfoResponse.builder()
+                .email(email)
+                .name(member.getName())
+                .created_at(member.getCreatedAt())
+                .build();
+
+        return memberInfo;
     }
 
     @Override
-    public Long deleteMember(Long memberId) {
-        return 0L;
-    }
-
-    @Override
-    public boolean signIn(LoginRequest request) {
-        return true;
+    @Transactional
+    public void deleteMember(String email) {
+        long count = memberRepository.deleteByEmail(email);
+        if(count == 0) {
+            throw new NoSuchElementException("회원이 존재하지 않습니다.");
+        }
     }
 }

@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/member/sign-up", "/", "/login","/h2-console/**").permitAll() //모두 허용
                         .requestMatchers("/admin/**").hasRole("ADMIN") //admin 만
+                        .requestMatchers("/seller/**").hasRole("SELLER") //판매자만
                         .anyRequest().authenticated()); //인증된 사용자만
 
         //jwt 필터
