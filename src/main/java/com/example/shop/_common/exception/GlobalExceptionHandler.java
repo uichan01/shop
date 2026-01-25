@@ -1,6 +1,6 @@
-package com.example.shop.common.exception;
+package com.example.shop._common.exception;
 
-import com.example.shop.common.response.ApiResponse;
+import com.example.shop._common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

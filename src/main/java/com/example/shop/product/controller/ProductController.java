@@ -1,11 +1,14 @@
 package com.example.shop.product.controller;
 
-import com.example.shop.common.response.ApiResponse;
+import com.example.shop._common.response.ApiResponse;
+import com.example.shop.product.dto.request.ProductCreateRequest;
 import com.example.shop.product.dto.request.SearchOptionRequest;
 import com.example.shop.product.dto.response.ProductDetailResponse;
 import com.example.shop.product.dto.response.ProductListResponse;
 import com.example.shop.product.service.ProductService;
+import com.example.shop.security.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +21,7 @@ public class ProductController {
     private final ProductService productService;
     //상품등록(SELLER)
     @PostMapping
-    public ApiResponse<Long> registerProduct() {
+    public ApiResponse<Long> registerProduct(@AuthenticationPrincipal CustomUserDetails currentUser, ProductCreateRequest request) {
 
     }
     //상품수정(SELLER)

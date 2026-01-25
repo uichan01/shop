@@ -1,6 +1,6 @@
 package com.example.shop.member.controller;
 
-import com.example.shop.common.response.ApiResponse;
+import com.example.shop._common.response.ApiResponse;
 import com.example.shop.member.dto.request.SignUpRequest;
 import com.example.shop.member.dto.response.MemberInfoResponse;
 import com.example.shop.member.service.MemberService;
