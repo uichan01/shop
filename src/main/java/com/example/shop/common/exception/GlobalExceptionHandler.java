@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
         String defaultMessages = e.getBindingResult().getFieldErrors()
                 .stream().map(error -> error.getDefaultMessage())
                 .reduce((msg1, msg2) -> msg1 + ", " + msg2)
-                .orElse("올바르지 않은 요청입니다");
+                .orElse("올바르지 않은 입력값입니다");
 
         log.warn("MethodArgumentNotValidException 발생: {}", defaultMessages);
 

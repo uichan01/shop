@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,9 +31,43 @@ class MemberControllerIntegrationTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
     @BeforeEach
     void setup() {
         memberRepository.deleteAll();
+    }
+
+    private MemberEntity saveTestMember() {
+        return memberRepository.save(
+                MemberEntity.builder()
+                        .name("테스트유저")
+                        .email("test@example.com")
+                        .password(passwordEncoder.encode("password@"))
+                        .role(Role.ROLE_USER)
+                        .build()
+        );
+    }
+
+    private void setSecurityContext(MemberEntity member) {
+        CustomUserDetails userDetails = new CustomUserDetails(
+                new MemberDto(
+                        member.getEmail(),
+                        member.getPassword(),
+                        member.getRole().name()
+                )
+        );
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     @Test
@@ -83,22 +118,8 @@ class MemberControllerIntegrationTest {
     @DisplayName("회원 정보 조회 테스트")
     void testGetMemberInfoSecurityContext() throws Exception {
 
-        MemberEntity member = memberRepository.save(
-                MemberEntity.builder()
-                        .name("테스트유저")
-                        .email("test@example.com")
-                        .password(new BCryptPasswordEncoder().encode("password@"))
-                        .role(Role.ROLE_USER)
-                        .build()
-        );
-
-        // SecurityContext 설정
-        CustomUserDetails userDetails = new CustomUserDetails(
-                new MemberDto(member.getEmail(), member.getPassword(), member.getRole().name())
-        );
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        MemberEntity member = saveTestMember();
+        setSecurityContext(member);
 
         mockMvc.perform(get("/member/info")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -111,21 +132,8 @@ class MemberControllerIntegrationTest {
     @DisplayName("회원 탈퇴 테스트")
     void testDeleteMember() throws Exception {
 
-        MemberEntity member = memberRepository.save(
-                MemberEntity.builder()
-                        .name("테스트유저")
-                        .email("test@example.com")
-                        .password(new BCryptPasswordEncoder().encode("password@"))
-                        .role(Role.ROLE_USER)
-                        .build()
-        );
-
-        CustomUserDetails userDetails = new CustomUserDetails(
-                new MemberDto(member.getEmail(), member.getPassword(), member.getRole().name())
-        );
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        MemberEntity member = saveTestMember();
+        setSecurityContext(member);
 
         mockMvc.perform(delete("/member/my_account")
                         .contentType(MediaType.APPLICATION_JSON))

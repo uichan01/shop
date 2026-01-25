@@ -30,6 +30,10 @@ public class MemberController {
         return ApiResponse.success(memberInfo);
     }
     //정보수정
+
+
+
+
     //탈퇴
     @DeleteMapping("/my_account")
     public ApiResponse<Void> deleteMember(@AuthenticationPrincipal CustomUserDetails currentUser) {

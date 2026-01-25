@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "member")
+@Table(name = "members")
 @EntityListeners(AuditingEntityListener.class)
 public class MemberEntity {
     @Id
@@ -29,6 +29,7 @@ public class MemberEntity {
     private String name;
 
     @Column(length = 20, nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @Column(name = "created_at")
