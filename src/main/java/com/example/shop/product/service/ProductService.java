@@ -10,11 +10,11 @@ import java.util.List;
 
 public interface ProductService {
 
-    Long registerProduct(ProductCreateRequest request, Long sellerId);
+    Long registerProduct(ProductCreateRequest request, String sellerName);
 
-    void updateProduct(Long productId, ProductUpdateRequest request, Long sellerId);
+    Long updateProduct(ProductUpdateRequest request, String sellerName);
 
-    void deleteProduct(Long productId, Long sellerId);
+    void deleteProduct(Long productId, String sellerName);
 
     ProductDetailResponse getProduct(Long productId);
 

@@ -2,6 +2,7 @@ package com.example.shop.product.controller;
 
 import com.example.shop._common.response.ApiResponse;
 import com.example.shop.product.dto.request.ProductCreateRequest;
+import com.example.shop.product.dto.request.ProductUpdateRequest;
 import com.example.shop.product.dto.request.SearchOptionRequest;
 import com.example.shop.product.dto.response.ProductDetailResponse;
 import com.example.shop.product.dto.response.ProductListResponse;
@@ -22,32 +23,35 @@ public class ProductController {
     //상품등록(SELLER)
     @PostMapping
     public ApiResponse<Long> registerProduct(@AuthenticationPrincipal CustomUserDetails currentUser, ProductCreateRequest request) {
-
+        Long productId = productService.registerProduct(request, currentUser.getUsername());
+        return ApiResponse.success(productId);
     }
     //상품수정(SELLER)
     @PutMapping("/{productId")
-    public ApiResponse<Long> updateProduct() {
-
+    public ApiResponse<Long> updateProduct(@AuthenticationPrincipal CustomUserDetails currentUser, ProductUpdateRequest request) {
+        Long productId = productService.updateProduct(request, currentUser.getUsername());
+        return ApiResponse.success(productId);
     }
     //상품삭제(SELLER)
     @DeleteMapping("/{productId}")
-    public ApiResponse<Void> deleteProduct(
-            @PathVariable Long productId
-    ) { }
+    public ApiResponse<Void> deleteProduct(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long productId) {
+        productService.deleteProduct(productId, currentUser.getUsername());
+        return ApiResponse.success();
+    }
 
     //단건 상세조회
     @GetMapping("/{productId}")
-    public ApiResponse<ProductDetailResponse> getProduct(
-            @PathVariable Long productId
-    ) { }
+    public ApiResponse<ProductDetailResponse> getProduct(@PathVariable Long productId) {
+        ProductDetailResponse product = productService.getProduct(productId);
+        return ApiResponse.success(product);
+    }
 
     //목록조회
     @GetMapping
     public ApiResponse<List<ProductListResponse>> getProducts(SearchOptionRequest searchOption) {
-
+        List<ProductListResponse> products = productService.getProducts(searchOption);
+        return ApiResponse.success(products);
     }
-
-
 
     //인기상품 검색
 }

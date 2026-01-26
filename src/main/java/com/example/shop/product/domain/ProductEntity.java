@@ -3,6 +3,7 @@ package com.example.shop.product.domain;
 import com.example.shop.category.domain.CategoryEntity;
 import com.example.shop.member.domain.MemberEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -45,4 +46,25 @@ public class ProductEntity {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    @Builder
+    public ProductEntity(MemberEntity seller, CategoryEntity category, String name, int price, int stock, Status status) {
+        this.seller = seller;
+        this.category = category;
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.status = status;
+    }
+
+    public void update(String name, Integer price, Integer stock, Status status, CategoryEntity category) {
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.status = status;
+        this.category = category;
+    }
+
+    public void delete() {
+        this.status = Status.DELETED;
+    }
 }
