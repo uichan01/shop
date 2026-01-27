@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLOutput;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -36,8 +37,11 @@ public class ProductServiceImpl implements ProductService{
         if(member.getRole() != Role.ROLE_SELLER) //권한검증
             throw new IllegalStateException("판매자만 상품 등록이 가능합니다.");
 
-        CategoryEntity category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new NoSuchElementException("카테고리를 찾을 수 없습니다."));
+        CategoryEntity category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new NoSuchElementException("카테고리를 찾을 수 없습니다."));
+        }
 
         ProductEntity product = ProductEntity.builder()
                 .name(request.getName())
@@ -105,7 +109,15 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public ProductDetailResponse getProduct(Long productId) {
-        return null;
+        ProductEntity productEntity = productRepository.findById(productId)
+                .orElseThrow(()-> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        ProductDetailResponse response = ProductDetailResponse.builder()
+                .name(productEntity.getName())
+                .price(productEntity.getPrice())
+                .build();
+
+        return response;
     }
 
     @Override

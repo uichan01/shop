@@ -45,7 +45,7 @@ public class ProductController {
 
     //단건 상세조회
     @GetMapping("/{productId}")
-    public ApiResponse<ProductDetailResponse> getProduct(@PathVariable Long productId) {
+    public ApiResponse<ProductDetailResponse> getProduct(@PathVariable("productId") Long productId) {
         ProductDetailResponse product = productService.getProduct(productId);
         return ApiResponse.success(product);
     }
