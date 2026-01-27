@@ -1,13 +1,13 @@
 package com.example.shop.product.dto.request;
 
 import com.example.shop.product.domain.Status;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductUpdateRequest {
     private Long id;
     private String name;

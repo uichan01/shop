@@ -2,6 +2,7 @@ package com.example.shop.member.controller;
 
 import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
+import com.example.shop.member.dto.request.SignUpRequest;
 import com.example.shop.member.repository.MemberRepository;
 import com.example.shop.security.dto.CustomUserDetails;
 import com.example.shop.security.dto.MemberDto;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +35,9 @@ class MemberControllerIntegrationTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
 
     @BeforeEach
@@ -73,44 +78,54 @@ class MemberControllerIntegrationTest {
     @Test
     @DisplayName("일반유저 회원가입 테스트")
     void testSignUp() throws Exception {
+        SignUpRequest req = new SignUpRequest(
+                "user@example.com",
+                "password@",
+                "테스트유저",
+                Role.ROLE_USER
+        );
+
         mockMvc.perform(post("/member/sign-up")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "테스트유저")
-                        .param("email", "test@example.com")
-                        .param("password", "password@")
-                        .param("role", "ROLE_USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
     }
 
-    @Test
     @DisplayName("셀러 회원가입 테스트")
+    @Test
     void testSellerSignUp() throws Exception {
+        SignUpRequest req = new SignUpRequest(
+                "seller@example.com",
+                "password@",
+                "테스트셀러",
+                Role.ROLE_SELLER
+        );
+
         mockMvc.perform(post("/member/sign-up")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "테스트셀러")
-                        .param("email", "seller@example.com")
-                        .param("password", "password@")
-                        .param("role", "ROLE_SELLER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("중복이메일 회원가입 테스트")
+    @DisplayName("중복 이메일 회원가입 테스트")
     void testDuplicationSignUp() throws Exception {
+
+        SignUpRequest req = new SignUpRequest(
+                "test@example.com",
+                "password@",
+                "중복테스트유저",
+                Role.ROLE_USER
+        );
+
         mockMvc.perform(post("/member/sign-up")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "테스트유저")
-                        .param("email", "test@example.com")
-                        .param("password", "password@")
-                        .param("role", "ROLE_USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
 
         mockMvc.perform(post("/member/sign-up")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "테스트유저")
-                        .param("email", "test@example.com")
-                        .param("password", "password@")
-                        .param("role", "ROLE_USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest());
     }
 

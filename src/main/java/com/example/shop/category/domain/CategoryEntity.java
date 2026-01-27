@@ -1,6 +1,7 @@
 package com.example.shop.category.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,4 +20,9 @@ public class CategoryEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private CategoryEntity categoryEntity;
+
+    @Builder
+    public CategoryEntity(String name) {
+        this.name = name;
+    }
 }

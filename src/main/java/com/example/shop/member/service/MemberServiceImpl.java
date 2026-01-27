@@ -58,6 +58,7 @@ public class MemberServiceImpl implements MemberService{
         MemberInfoResponse memberInfo = MemberInfoResponse.builder()
                 .email(email)
                 .name(member.getName())
+                .role(member.getRole())
                 .created_at(member.getCreatedAt())
                 .build();
 

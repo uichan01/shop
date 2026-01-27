@@ -1,8 +1,12 @@
 package com.example.shop.product.controller;
 
+import com.example.shop.category.domain.CategoryEntity;
+import com.example.shop.category.repository.CategoryRepository;
 import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
 import com.example.shop.member.repository.MemberRepository;
+import com.example.shop.product.domain.Status;
+import com.example.shop.product.dto.request.ProductCreateRequest;
 import com.example.shop.product.repository.ProductRepository;
 import com.example.shop.security.dto.CustomUserDetails;
 import com.example.shop.security.dto.MemberDto;
@@ -36,7 +40,13 @@ class ProductControllerIntegrationTest {
     private ProductRepository productRepository;
 
     @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @BeforeEach
     void setup() {
@@ -67,6 +77,10 @@ class ProductControllerIntegrationTest {
                         .build()
         );
     }
+    private CategoryEntity saveCategory() {
+        CategoryEntity category = new CategoryEntity("테스트카테고리");
+        return categoryRepository.save(category);
+    }
 
     private void setSecurityContext(MemberEntity member) {
         CustomUserDetails userDetails = new CustomUserDetails(
@@ -94,34 +108,47 @@ class ProductControllerIntegrationTest {
         MemberEntity seller = saveSeller();
         setSecurityContext(seller);
 
+        CategoryEntity category = saveCategory();
+
+        ProductCreateRequest req = new ProductCreateRequest(
+                "테스트상품",
+                category.getId(),
+                10000,
+                10,
+                Status.SELLING
+        );
+
         mockMvc.perform(post("/product")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "테스트상품")
-                        .param("price", "10000")
-                        .param("stock", "10")
-                        .param("description", "상품설명"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").exists());
     }
 
+
+
     @Test
     @DisplayName("상품 단건 조회 테스트")
     void getProductDetail() throws Exception {
-        MemberEntity member = saveTestMember();
+        MemberEntity member = saveSeller();
         setSecurityContext(member);
+
+        ProductCreateRequest req = new ProductCreateRequest(
+                "테스트상품",
+                null,
+                10000,
+                10,
+                Status.SELLING
+        );
 
         String response =
                 mockMvc.perform(post("/product")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "테스트상품")
-                        .param("price", "10000")
-                        .param("stock", "10"))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        ObjectMapper objectMapper = new ObjectMapper();
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
 
         Long productId = objectMapper
                 .readTree(response)
@@ -152,17 +179,24 @@ class ProductControllerIntegrationTest {
         MemberEntity seller = saveSeller();
         setSecurityContext(seller);
 
+        CategoryEntity category = saveCategory();
+
+        ProductCreateRequest req = new ProductCreateRequest(
+                "삭제상품",
+                category.getId(),
+                10000,
+                10,
+                Status.SELLING
+        );
+
         String response =
                 mockMvc.perform(post("/product")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .param("name", "삭제상품")
-                                .param("price", "10000")
-                                .param("stock", "10"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                        .andExpect(status().isOk())
                         .andReturn()
                         .getResponse()
                         .getContentAsString();
-
-        ObjectMapper objectMapper = new ObjectMapper();
 
         Long productId = objectMapper
                 .readTree(response)

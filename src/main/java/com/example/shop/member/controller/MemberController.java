@@ -17,7 +17,7 @@ public class MemberController {
     private final MemberService memberService;
     //일반유저 회원가입
     @PostMapping("/sign-up")
-    public ApiResponse<Void> signUp(@Valid SignUpRequest signUpRequest) {
+    public ApiResponse<Void> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
 
         memberService.addMember(signUpRequest);
         return ApiResponse.success();
