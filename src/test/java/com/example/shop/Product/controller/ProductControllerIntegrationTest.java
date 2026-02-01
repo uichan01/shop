@@ -1,15 +1,17 @@
-package com.example.shop.product.controller;
+package com.example.shop.Product.controller;
 
 import com.example.shop.category.domain.CategoryEntity;
 import com.example.shop.category.repository.CategoryRepository;
 import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
 import com.example.shop.member.repository.MemberRepository;
+import com.example.shop.product.domain.ProductEntity;
 import com.example.shop.product.domain.Status;
 import com.example.shop.product.dto.request.ProductCreateRequest;
 import com.example.shop.product.repository.ProductRepository;
 import com.example.shop.security.dto.CustomUserDetails;
 import com.example.shop.security.dto.MemberDto;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -54,7 +57,6 @@ class ProductControllerIntegrationTest {
         memberRepository.deleteAll();
         SecurityContextHolder.clearContext();
     }
-
 
     private MemberEntity saveSeller() {
         return memberRepository.save(
@@ -125,6 +127,26 @@ class ProductControllerIntegrationTest {
                 .andExpect(jsonPath("$.data").exists());
     }
 
+    @Test
+    @DisplayName("상품 등록 실패 테스트 (USER, 권한X)")
+    void registerProductFailByUser() throws Exception {
+        MemberEntity user = saveTestMember();
+        setSecurityContext(user);
+
+        ProductCreateRequest req = new ProductCreateRequest(
+                "상품",
+                null,
+                10000,
+                10,
+                Status.SELLING
+        );
+
+        mockMvc.perform(post("/product")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isForbidden());
+    }
+
 
 
     @Test
@@ -158,6 +180,16 @@ class ProductControllerIntegrationTest {
         mockMvc.perform(get("/product/{productId}", productId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.name").value("테스트상품"));
+    }
+
+    @Test
+    @DisplayName("상품 단건 조회 실패(상품 존재X)")
+    void getProductNotFound() throws Exception {
+        MemberEntity member = saveTestMember();
+        setSecurityContext(member);
+        
+        mockMvc.perform(get("/product/{productId}", 9999L))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -205,5 +237,10 @@ class ProductControllerIntegrationTest {
 
         mockMvc.perform(delete("/product/{productId}", productId))
                 .andExpect(status().isOk());
+
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow();
+
+        assertThat(product.getStatus()).isEqualTo(Status.DELETED);
     }
 }

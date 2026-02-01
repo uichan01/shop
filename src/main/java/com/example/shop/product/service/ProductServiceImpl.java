@@ -89,6 +89,7 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
+    @Transactional
     public void deleteProduct(Long productId, String sellerName) {
         MemberEntity seller = memberRepository.findByEmail(sellerName)
                 .orElseThrow(() -> new NoSuchElementException("판매자를 찾을 수 없습니다."));
