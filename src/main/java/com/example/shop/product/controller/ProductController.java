@@ -52,9 +52,13 @@ public class ProductController {
 
     //목록조회
     @GetMapping
-    public ApiResponse<List<ProductListResponse>> getProducts(@RequestBody SearchOptionRequest searchOption) {
-        List<ProductListResponse> products = productService.getProducts(searchOption);
-        return ApiResponse.success(products);
+    public ApiResponse<List<ProductListResponse>> getProducts(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @ModelAttribute SearchOptionRequest searchOption) {
+        return ApiResponse.success(
+                productService.getProducts(searchOption, page, size)
+        );
     }
 
     //인기상품 검색

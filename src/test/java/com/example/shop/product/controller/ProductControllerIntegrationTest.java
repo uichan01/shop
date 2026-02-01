@@ -1,4 +1,4 @@
-package com.example.shop.Product.controller;
+package com.example.shop.product.controller;
 
 import com.example.shop.category.domain.CategoryEntity;
 import com.example.shop.category.repository.CategoryRepository;
@@ -11,7 +11,6 @@ import com.example.shop.product.dto.request.ProductCreateRequest;
 import com.example.shop.product.repository.ProductRepository;
 import com.example.shop.security.dto.CustomUserDetails;
 import com.example.shop.security.dto.MemberDto;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +23,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
+
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -79,6 +81,7 @@ class ProductControllerIntegrationTest {
                         .build()
         );
     }
+
     private CategoryEntity saveCategory() {
         CategoryEntity category = new CategoryEntity("테스트카테고리");
         return categoryRepository.save(category);
@@ -148,7 +151,6 @@ class ProductControllerIntegrationTest {
     }
 
 
-
     @Test
     @DisplayName("상품 단건 조회 테스트")
     void getProductDetail() throws Exception {
@@ -187,7 +189,7 @@ class ProductControllerIntegrationTest {
     void getProductNotFound() throws Exception {
         MemberEntity member = saveTestMember();
         setSecurityContext(member);
-        
+
         mockMvc.perform(get("/product/{productId}", 9999L))
                 .andExpect(status().isBadRequest());
     }
@@ -204,6 +206,57 @@ class ProductControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray());
     }
+
+    @Test
+    @DisplayName("상품 목록 조회 - 카테고리 검색")
+    void getProductList_WithKeyword() throws Exception {
+        MemberEntity seller = saveSeller();
+        setSecurityContext(seller);
+
+        CategoryEntity category1 = CategoryEntity.builder().name("전자기기").build();
+        CategoryEntity savedCategory1 = categoryRepository.save(category1);
+        CategoryEntity category2 = CategoryEntity.builder().name("노트북").build();
+        category2.setCategoryEntity(savedCategory1); //상위분류 설정
+        CategoryEntity savedCategory2 = categoryRepository.save(category2);
+
+        ProductEntity p1 = ProductEntity.builder()
+                .seller(seller)
+                .category(savedCategory1) //분류: 전자기기
+                .name("일반 전자기기")
+                .price(1000000)
+                .stock(10)
+                .status(Status.SELLING)
+                .build();
+
+        ProductEntity p2 = ProductEntity.builder()
+                .seller(seller)
+                .category(savedCategory2)
+                .name("게이밍 노트북") //분류: 전자기기-노트북
+                .price(1010000)
+                .stock(10)
+                .status(Status.SELLING)
+                .build();
+
+        productRepository.saveAll(List.of(p1, p2));
+
+
+        mockMvc.perform(get("/product")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("categoryId", savedCategory1.getId().toString())) //전자기기
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(2)); //p1, p2
+
+        mockMvc.perform(get("/product")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("categoryId", savedCategory2.getId().toString())) //전자기기-노트북
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(1)); //p2
+    }
+
 
     @Test
     @DisplayName("상품 삭제 테스트 (SELLER)")

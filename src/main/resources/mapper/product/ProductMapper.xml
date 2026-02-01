@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.shop.product.mapper.ProductMapper">
+
+    <select id="findProductListWithOption"
+            resultType="com.example.shop.product.dto.response.ProductListResponse">
+
+        WITH RECURSIVE category_tree AS (
+        SELECT id
+        FROM categories
+        WHERE id = #{request.categoryId}
+
+        UNION ALL
+
+        SELECT c.id
+        FROM categories c
+        JOIN category_tree ct
+        ON c.parent_id = ct.id
+        )
+
+        SELECT
+        p.id,
+        p.name,
+        p.price,
+        p.stock,
+        p.status,
+        p.created_at
+        FROM products p
+
+        <where>
+            AND p.status != 'DELETED'
+
+            <!--검색옵션-->
+            <if test="request.keyword != null and request.keyword != ''">
+                AND p.name LIKE CONCAT('%', #{request.keyword}, '%')
+            </if>
+
+            <if test="request.categoryId != null">
+                AND p.category_id IN (
+                SELECT id FROM category_tree
+                )
+            </if>
+
+            <if test="request.sellerId != null">
+                AND p.seller_id = #{request.sellerId}
+            </if>
+            <!--검색옵션 끝-->
+
+        </where>
+
+        ORDER BY p.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+
+    </select>
+
+
+</mapper>

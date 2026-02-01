@@ -18,5 +18,5 @@ public interface ProductService {
 
     ProductDetailResponse getProduct(Long productId);
 
-    List<ProductListResponse> getProducts(SearchOptionRequest searchOption);
+    List<ProductListResponse> getProducts(SearchOptionRequest searchOption, int page, int size);
 }

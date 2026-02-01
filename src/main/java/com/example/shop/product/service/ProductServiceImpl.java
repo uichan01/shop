@@ -11,12 +11,12 @@ import com.example.shop.product.dto.request.ProductUpdateRequest;
 import com.example.shop.product.dto.request.SearchOptionRequest;
 import com.example.shop.product.dto.response.ProductDetailResponse;
 import com.example.shop.product.dto.response.ProductListResponse;
+import com.example.shop.product.mapper.ProductMapper;
 import com.example.shop.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLOutput;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -27,6 +27,8 @@ public class ProductServiceImpl implements ProductService{
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
+
+    private final ProductMapper productMapper;
 
     //상품등록
     @Override
@@ -122,7 +124,10 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public List<ProductListResponse> getProducts(SearchOptionRequest searchOption) {
-        return List.of();
+    public List<ProductListResponse> getProducts(SearchOptionRequest searchOption, int page, int size) {
+
+        int offset = page * size;
+        List<ProductListResponse> resultList = productMapper.findProductListWithOption(offset, size, searchOption);
+        return resultList;
     }
 }

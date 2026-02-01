@@ -11,9 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SearchOptionRequest {
     private String keyword;
-    private String categoryId;
-    private String SellerId;
-
-    private Integer page = 0;
-    private Integer size = 20;
+    private Long categoryId;
+    private Long SellerId;
 }
