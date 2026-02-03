@@ -3,6 +3,8 @@ package com.example.shop.product.dto.request;
 import com.example.shop.product.domain.Status;
 import lombok.*;
 
+import java.util.List;
+
 @Setter
 @Getter
 @Builder
@@ -15,4 +17,5 @@ public class ProductUpdateRequest {
     private int price;
     private int stock;
     private Status status;
+    private String description;
 }

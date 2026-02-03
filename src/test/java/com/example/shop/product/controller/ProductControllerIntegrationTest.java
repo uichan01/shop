@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -121,11 +122,21 @@ class ProductControllerIntegrationTest {
                 10000,
                 10,
                 Status.SELLING
+                ,"테스트 상품 설명"
         );
 
-        mockMvc.perform(post("/product")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+
+        MockMultipartFile productPart =
+                new MockMultipartFile(
+                        "product",
+                        "",
+                        "application/json",
+                        objectMapper.writeValueAsBytes(req)
+                );
+
+        mockMvc.perform(multipart("/product")
+                        .file(productPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").exists());
     }
@@ -137,16 +148,26 @@ class ProductControllerIntegrationTest {
         setSecurityContext(user);
 
         ProductCreateRequest req = new ProductCreateRequest(
-                "상품",
+                "테스트상품",
                 null,
                 10000,
                 10,
                 Status.SELLING
+                ,"테스트 상품 설명"
         );
 
-        mockMvc.perform(post("/product")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+
+        MockMultipartFile productPart =
+                new MockMultipartFile(
+                        "product",
+                        "",
+                        "application/json",
+                        objectMapper.writeValueAsBytes(req)
+                );
+
+        mockMvc.perform(multipart("/product")
+                        .file(productPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isForbidden());
     }
 
@@ -163,17 +184,27 @@ class ProductControllerIntegrationTest {
                 10000,
                 10,
                 Status.SELLING
+                ,"테스트 상품 설명"
         );
 
+
+        MockMultipartFile productPart =
+                new MockMultipartFile(
+                        "product",
+                        "",
+                        "application/json",
+                        objectMapper.writeValueAsBytes(req)
+                );
+
         String response =
-                mockMvc.perform(post("/product")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(req)))
+                mockMvc.perform(multipart("/product")
+                                .file(productPart)
+                                .contentType(MediaType.MULTIPART_FORM_DATA))
                         .andExpect(status().isOk())
                         .andReturn()
                         .getResponse()
                         .getContentAsString();
-
+        
         Long productId = objectMapper
                 .readTree(response)
                 .get("data")
@@ -240,13 +271,17 @@ class ProductControllerIntegrationTest {
         productRepository.saveAll(List.of(p1, p2));
 
 
-        mockMvc.perform(get("/product")
+       mockMvc.perform(get("/product")
                         .param("page", "0")
                         .param("size", "10")
                         .param("categoryId", savedCategory1.getId().toString())) //전자기기
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(2)); //p1, p2
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();//p1, p2
+
 
         mockMvc.perform(get("/product")
                         .param("page", "0")
@@ -267,22 +302,32 @@ class ProductControllerIntegrationTest {
         CategoryEntity category = saveCategory();
 
         ProductCreateRequest req = new ProductCreateRequest(
-                "삭제상품",
-                category.getId(),
+                "테스트상품",
+                null,
                 10000,
                 10,
                 Status.SELLING
+                ,"테스트 상품 설명"
         );
 
+
+        MockMultipartFile productPart =
+                new MockMultipartFile(
+                        "product",
+                        "",
+                        "application/json",
+                        objectMapper.writeValueAsBytes(req)
+                );
+
         String response =
-                mockMvc.perform(post("/product")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(req)))
+                mockMvc.perform(multipart("/product")
+                                .file(productPart)
+                                .contentType(MediaType.MULTIPART_FORM_DATA))
                         .andExpect(status().isOk())
                         .andReturn()
                         .getResponse()
                         .getContentAsString();
-
+        
         Long productId = objectMapper
                 .readTree(response)
                 .get("data")

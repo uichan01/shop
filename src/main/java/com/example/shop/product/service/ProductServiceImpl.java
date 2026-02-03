@@ -1,42 +1,50 @@
 package com.example.shop.product.service;
 
+import com.example.shop._common.storage.ImageStorage;
 import com.example.shop.category.domain.CategoryEntity;
 import com.example.shop.category.repository.CategoryRepository;
 import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
 import com.example.shop.member.repository.MemberRepository;
 import com.example.shop.product.domain.ProductEntity;
+import com.example.shop.product.domain.ProductImageEntity;
 import com.example.shop.product.dto.request.ProductCreateRequest;
 import com.example.shop.product.dto.request.ProductUpdateRequest;
 import com.example.shop.product.dto.request.SearchOptionRequest;
 import com.example.shop.product.dto.response.ProductDetailResponse;
+import com.example.shop.product.dto.response.ProductImageResponse;
 import com.example.shop.product.dto.response.ProductListResponse;
 import com.example.shop.product.mapper.ProductMapper;
+import com.example.shop.product.repository.ProductImageRepository;
 import com.example.shop.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-public class ProductServiceImpl implements ProductService{
+public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
 
     private final ProductMapper productMapper;
 
+    private final ImageStorage imageStorage;
+
     //상품등록
     @Override
     @Transactional
-    public Long registerProduct(ProductCreateRequest request, String sellerName) {
+    public Long registerProduct(ProductCreateRequest request, String sellerName, List<MultipartFile> images) {
         MemberEntity member = memberRepository.findByEmail(sellerName)
                 .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
-        if(member.getRole() != Role.ROLE_SELLER) //권한검증
+        if (member.getRole() != Role.ROLE_SELLER) //권한검증
             throw new IllegalStateException("판매자만 상품 등록이 가능합니다.");
 
         CategoryEntity category = null;
@@ -52,16 +60,30 @@ public class ProductServiceImpl implements ProductService{
                 .stock(request.getStock())
                 .price(request.getPrice())
                 .status(request.getStatus())
+                .description(request.getDescription())
                 .build();
 
         ProductEntity savedProduct = productRepository.save(product);
+
+        if (images != null) {
+            for (int sortOrder = 1; sortOrder <= images.size(); sortOrder++) {
+                String path = imageStorage.save(images.get(sortOrder));
+                ProductImageEntity image = ProductImageEntity.builder()
+                        .photoUrl(path)
+                        .product(savedProduct)
+                        .sortOrder(sortOrder)
+                        .build();
+
+                productImageRepository.save(image);
+            }
+        }
 
         return savedProduct.getId();
     }
 
     @Override
     @Transactional
-    public Long updateProduct(ProductUpdateRequest request, String sellerName) {
+    public Long updateProduct(ProductUpdateRequest request, String sellerName, List<MultipartFile> images) {
         MemberEntity seller = memberRepository.findByEmail(sellerName)
                 .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
 
@@ -84,11 +106,31 @@ public class ProductServiceImpl implements ProductService{
                 request.getPrice(),
                 request.getStock(),
                 request.getStatus(),
-                category
+                category,
+                request.getDescription()
         );
 
+        //이미지 수정시
+        if (images != null) {
+            {
+                //기존이미지 삭제
+                productImageRepository.deleteByProductId(product.getId());
+                //저장
+                for (int sortOrder = 1; sortOrder <= images.size(); sortOrder++) {
+                    String path = imageStorage.save(images.get(sortOrder));
+                    ProductImageEntity image = ProductImageEntity.builder()
+                            .photoUrl(path)
+                            .product(product)
+                            .sortOrder(sortOrder)
+                            .build();
+
+                    productImageRepository.save(image);
+                }
+            }
+        }
         return product.getId();
     }
+
 
     @Override
     @Transactional
@@ -115,9 +157,19 @@ public class ProductServiceImpl implements ProductService{
         ProductEntity productEntity = productRepository.findById(productId)
                 .orElseThrow(()-> new NoSuchElementException("상품을 찾을 수 없습니다."));
 
+        List<ProductImageEntity> images = productImageRepository.findByProductIdOrderBySortOrderAsc(productId);
+
+        List<ProductImageResponse> imageResponses = images.stream()
+                        .map(ProductImageResponse::EntityToDto)
+                        .toList();
+
         ProductDetailResponse response = ProductDetailResponse.builder()
+                .productId(productEntity.getId())
                 .name(productEntity.getName())
                 .price(productEntity.getPrice())
+                .description(productEntity.getDescription())
+                .status(productEntity.getStatus())
+                .images(imageResponses)
                 .build();
 
         return response;

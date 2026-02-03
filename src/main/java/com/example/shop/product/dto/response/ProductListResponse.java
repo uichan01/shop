@@ -8,6 +8,11 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ProductListResponse {
+
+    private Long productId;
+
     private String name;
     private int price;
+
+    private String thumbnailPath;
 }

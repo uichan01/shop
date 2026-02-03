@@ -8,10 +8,10 @@ import com.example.shop.product.dto.response.ProductDetailResponse;
 import com.example.shop.product.dto.response.ProductListResponse;
 import com.example.shop.product.service.ProductService;
 import com.example.shop.security.dto.CustomUserDetails;
-import jakarta.persistence.PreUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,20 +21,25 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
     //상품등록(SELLER)
     @PostMapping
     public ApiResponse<Long> registerProduct(@AuthenticationPrincipal CustomUserDetails currentUser,
-                                             @RequestBody ProductCreateRequest request) {
-        Long productId = productService.registerProduct(request, currentUser.getUsername());
+                                             @RequestPart("product") ProductCreateRequest request,
+                                             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        Long productId = productService.registerProduct(request, currentUser.getUsername(), images);
         return ApiResponse.success(productId);
     }
+
     //상품수정(SELLER)
-    @PutMapping("/{productId}")
+    @PutMapping
     public ApiResponse<Long> updateProduct(@AuthenticationPrincipal CustomUserDetails currentUser,
-                                           @RequestBody ProductUpdateRequest request) {
-        Long productId = productService.updateProduct(request, currentUser.getUsername());
+                                           @RequestPart("product") ProductUpdateRequest request,
+                                           @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        Long productId = productService.updateProduct(request, currentUser.getUsername(), images);
         return ApiResponse.success(productId);
     }
+
     //상품삭제(SELLER)
     @DeleteMapping("/{productId}")
     public ApiResponse<Void> deleteProduct(@AuthenticationPrincipal CustomUserDetails currentUser,
