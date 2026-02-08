@@ -125,7 +125,7 @@ class MemberControllerIntegrationTest {
         mockMvc.perform(post("/member/sign-up")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
     }
 
     @Test
