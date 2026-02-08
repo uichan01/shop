@@ -261,8 +261,8 @@ class ProductControllerIntegrationTest {
 
         ProductEntity p2 = ProductEntity.builder()
                 .seller(seller)
-                .category(savedCategory2)
-                .name("게이밍 노트북") //분류: 전자기기-노트북
+                .category(savedCategory2) //분류: 전자기기-노트북
+                .name("게이밍 노트북")
                 .price(1010000)
                 .stock(10)
                 .status(Status.SELLING)

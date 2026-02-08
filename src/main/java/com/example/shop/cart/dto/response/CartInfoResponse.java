@@ -2,10 +2,12 @@ package com.example.shop.cart.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.util.List;
 
 @Builder
+@Getter
 @AllArgsConstructor
 public class CartInfoResponse {
     private List<CartItemResponse> items;
