@@ -1,7 +1,11 @@
 package com.example.shop.cart.repository;
 
-import com.example.shop.cart.domain.CartItem;
+import com.example.shop.cart.domain.CartEntity;
+import com.example.shop.cart.domain.CartItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CartItemRepository extends JpaRepository<CartItem, Long> {
+import java.util.List;
+
+public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> {
+    List<CartItemEntity> findAllByCart(CartEntity cart);
 }
