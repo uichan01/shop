@@ -13,8 +13,10 @@ import com.example.shop.member.repository.MemberRepository;
 import com.example.shop.product.domain.ProductEntity;
 import com.example.shop.product.domain.ProductImageEntity;
 import com.example.shop.product.repository.ProductImageRepository;
+import com.example.shop.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +28,12 @@ public class CartServiceImpl implements CartService {
     private final CartItemRepository cartItemRepository;
     private final CartRepository cartRepository;
     private final MemberRepository memberRepository;
+    private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
 
     //본인 장바구니조회
     @Override
+    @Transactional
     public CartInfoResponse getMyCart(String username) {
         MemberEntity member = memberRepository.findByEmail(username)
                 .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
@@ -81,19 +85,61 @@ public class CartServiceImpl implements CartService {
 
     //장바구니 상품추가
     @Override
+    @Transactional
     public void addProductToMyCart(String username, AddCartItemRequest request) {
+        MemberEntity member = memberRepository.findByEmail(username)
+                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
 
+        CartEntity cart = cartRepository.findByMember(member)
+                .orElseGet(() -> cartRepository.save(new CartEntity(member))); //없을경우 새로생성
+
+        ProductEntity product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        CartItemEntity cartItem = CartItemEntity.builder()
+                .cart(cart)
+                .product(product)
+                .quantity(request.getQuantity())
+                .build();
+
+        cartItemRepository.save(cartItem);
     }
 
     //장바구니 상품삭제
     @Override
+    @Transactional
     public void removeProductFromMyCart(String username, Long productId) {
+        MemberEntity member = memberRepository.findByEmail(username)
+                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
 
+        CartEntity cart = cartRepository.findByMember(member)
+                .orElseThrow(() -> new NoSuchElementException("장바구니가 존재하지 않습니다."));
+
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        CartItemEntity cartItem = cartItemRepository.findByCartAndProduct(cart, product)
+                .orElseThrow(() -> new NoSuchElementException("장바구니의 상품을 찾을 수 없습니다."));
+
+        cartItemRepository.delete(cartItem);
     }
 
     //장바구니 수량변경
     @Override
+    @Transactional
     public void updateMyCartProductQuantity(String username, UpdateCartItemRequest request) {
+        MemberEntity member = memberRepository.findByEmail(username)
+                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
 
+        CartEntity cart = cartRepository.findByMember(member)
+                .orElseThrow(() -> new NoSuchElementException("장바구니가 존재하지 않습니다."));
+
+        ProductEntity product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        CartItemEntity cartItem = cartItemRepository.findByCartAndProduct(cart, product)
+                .orElseThrow(() -> new NoSuchElementException("장바구니의 상품을 찾을 수 없습니다."));
+
+        cartItem.updateQuantity(request.getQuantity());
     }
 }
