@@ -1,8 +1,10 @@
 package com.example.shop.cart.controller;
 
 import com.example.shop.cart.dto.request.AddCartItemRequest;
+import com.example.shop.cart.dto.request.UpdateCartItemRequest;
 import com.example.shop.cart.repository.CartItemRepository;
 import com.example.shop.cart.repository.CartRepository;
+import com.example.shop.cart.service.CartService;
 import com.example.shop.category.domain.CategoryEntity;
 import com.example.shop.category.repository.CategoryRepository;
 import com.example.shop.member.domain.MemberEntity;
@@ -27,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -35,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class CartControllerIntegrationTest {
 
     @Getter
@@ -60,27 +64,14 @@ public class CartControllerIntegrationTest {
     private CartRepository cartRepository;
 
     @Autowired
+    private CartService cartService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setup() {
-//        productRepository.deleteAll();
-//        memberRepository.deleteAll();
-//        categoryRepository.deleteAll();
-//        cartItemRepository.deleteAll();
-//        cartRepository.deleteAll();
-
-        cartItemRepository.deleteAll();
-        cartRepository.deleteAll();
-        productRepository.deleteAll();
-        categoryRepository.deleteAll();
-        memberRepository.deleteAll();
-
-        SecurityContextHolder.clearContext();
-    }
 
     private MemberEntity saveTestMember() {
         return memberRepository.save(
@@ -168,7 +159,7 @@ public class CartControllerIntegrationTest {
 
     @Test
     @DisplayName("카트 상품추가")
-    void getNotEmptyCart() throws Exception {
+    void addCartItem() throws Exception {
         TestData testData = getTestData();
         AddCartItemRequest request = AddCartItemRequest.builder()
                 .productId(testData.product.getId())
@@ -176,8 +167,94 @@ public class CartControllerIntegrationTest {
                 .build();
 
         mockMvc.perform(post("/cart/items")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("카트 상품조회")
+    void getNotEmptyCart() throws Exception {
+        TestData testData = getTestData();
+        String name = testData.getMember().getEmail();
+        AddCartItemRequest request = AddCartItemRequest.builder()
+                .productId(testData.product.getId())
+                .quantity(1)
+                .build();
+
+        cartService.addProductToMyCart(name, request);
+
+        mockMvc.perform(get("/cart"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items", hasSize(1)))
+                .andExpect(jsonPath("$.data.totalQuantity").value(1))
+                .andExpect(jsonPath("$.data.totalPrice").value(10000));
+    }
+
+
+    @Test
+    @DisplayName("카트 상품삭제")
+    void deleteCartItem() throws Exception {
+        TestData testData = getTestData();
+        String name = testData.getMember().getEmail();
+        AddCartItemRequest request = AddCartItemRequest.builder()
+                .productId(testData.product.getId())
+                .quantity(1)
+                .build();
+
+        cartService.addProductToMyCart(name, request);
+
+        //삭제
+        mockMvc.perform(delete("/cart/items/{productId}",testData.product.getId()))
+                .andExpect(status().isOk());
+
+
+        //빈카트 조회됨
+        mockMvc.perform(get("/cart"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items", hasSize(0)))
+                .andExpect(jsonPath("$.data.totalQuantity").value(0))
+                .andExpect(jsonPath("$.data.totalPrice").value(0));
+    }
+
+    @Test
+    @DisplayName("카트 아이템 수량 변경")
+    void updateCartItemQuantity() throws Exception {
+        TestData testData = getTestData();
+        String name = testData.getMember().getEmail();
+        AddCartItemRequest request = AddCartItemRequest.builder()
+                .productId(testData.product.getId())
+                .quantity(1)
+                .build();
+
+        cartService.addProductToMyCart(name, request);
+
+        UpdateCartItemRequest updateRequest = UpdateCartItemRequest.builder()
+                .productId(testData.product.getId())
+                .quantity(10)
+                .build();
+
+        //수량변경
+        mockMvc.perform(put("/cart/items")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk());
+
+
+        //변경내용 조회됨
+        mockMvc.perform(get("/cart"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items", hasSize(1)))
+                .andExpect(jsonPath("$.data.totalQuantity").value(10))
+                .andExpect(jsonPath("$.data.totalPrice").value(100000));
+    }
+
+
+    @Test
+    @DisplayName("이미 존재하는 아이템 카트에 재추가")
+    void addDuplicateItem() throws Exception {
+
+    }
+
+
 }

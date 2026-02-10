@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class MemberControllerIntegrationTest {
 
     @Autowired
@@ -38,11 +40,6 @@ class MemberControllerIntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
 
-
-    @BeforeEach
-    void setup() {
-        memberRepository.deleteAll();
-    }
 
     private MemberEntity saveTestMember() {
         return memberRepository.save(
