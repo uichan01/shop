@@ -255,6 +255,4 @@ public class CartControllerIntegrationTest {
     void addDuplicateItem() throws Exception {
 
     }
-
-
 }

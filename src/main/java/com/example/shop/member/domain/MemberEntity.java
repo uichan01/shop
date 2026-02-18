@@ -43,4 +43,9 @@ public class MemberEntity {
         this.name = name;
         this.role = role;
     }
+
+    public void update(String password, String name) {
+        this.password = password;
+        this.name = name;
+    }
 }

@@ -3,6 +3,7 @@ package com.example.shop.member.controller;
 import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
 import com.example.shop.member.dto.request.SignUpRequest;
+import com.example.shop.member.dto.request.UpdateRequest;
 import com.example.shop.member.repository.MemberRepository;
 import com.example.shop.security.dto.CustomUserDetails;
 import com.example.shop.security.dto.MemberDto;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -149,5 +151,27 @@ class MemberControllerIntegrationTest {
         mockMvc.perform(delete("/member/my_account")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("유저 정보변경(비밀번호, 이름 변경)테스트")
+    void testUpdateMember() throws Exception {
+
+        MemberEntity member = saveTestMember();
+        setSecurityContext(member);
+
+        UpdateRequest request = UpdateRequest.builder()
+                .password("newPw!123")
+                .name("변경된이름")
+                .build();
+
+        mockMvc.perform(put("/member/info")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        MemberEntity updated = memberRepository.findById(member.getId()).orElseThrow();
+        assertThat(updated.getName()).isEqualTo("변경된이름");
+        assertThat(passwordEncoder.matches("newPw!123", updated.getPassword())).isTrue();
     }
 }

@@ -4,6 +4,7 @@ import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
 import com.example.shop.member.dto.request.LoginRequest;
 import com.example.shop.member.dto.request.SignUpRequest;
+import com.example.shop.member.dto.request.UpdateRequest;
 import com.example.shop.member.dto.response.MemberInfoResponse;
 import com.example.shop.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class MemberServiceImpl implements MemberService{
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public Boolean addMember(SignUpRequest request) {
+    public void addMember(SignUpRequest request) {
         String name = request.getName();
         String email = request.getEmail();
         String password = request.getPassword();
@@ -45,8 +46,6 @@ public class MemberServiceImpl implements MemberService{
                 .build();
 
         memberRepository.save(memberEntity);
-
-        return true;
     }
 
     @Override
@@ -63,6 +62,17 @@ public class MemberServiceImpl implements MemberService{
                 .build();
 
         return memberInfo;
+    }
+
+    @Override
+    @Transactional
+    public void updateMember(String email, UpdateRequest request) {
+
+        MemberEntity member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("회원이 존재하지 않습니다."));
+
+        String newPassword = bCryptPasswordEncoder.encode(request.getPassword());
+        member.update(newPassword, request.getName());
     }
 
     @Override
