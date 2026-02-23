@@ -59,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
                 .category(category)
                 .stock(request.getStock())
                 .price(request.getPrice())
-                .status(request.getStatus())
+                .status(request.getProductStatus())
                 .description(request.getDescription())
                 .build();
 
@@ -105,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
                 request.getName(),
                 request.getPrice(),
                 request.getStock(),
-                request.getStatus(),
+                request.getProductStatus(),
                 category,
                 request.getDescription()
         );
@@ -168,7 +168,7 @@ public class ProductServiceImpl implements ProductService {
                 .name(productEntity.getName())
                 .price(productEntity.getPrice())
                 .description(productEntity.getDescription())
-                .status(productEntity.getStatus())
+                .productStatus(productEntity.getProductStatus())
                 .images(imageResponses)
                 .build();
 

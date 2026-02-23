@@ -6,12 +6,11 @@ import com.example.shop.member.domain.MemberEntity;
 import com.example.shop.member.domain.Role;
 import com.example.shop.member.repository.MemberRepository;
 import com.example.shop.product.domain.ProductEntity;
-import com.example.shop.product.domain.Status;
+import com.example.shop.product.domain.ProductStatus;
 import com.example.shop.product.dto.request.ProductCreateRequest;
 import com.example.shop.product.repository.ProductRepository;
 import com.example.shop.security.dto.CustomUserDetails;
 import com.example.shop.security.dto.MemberDto;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,7 +115,7 @@ class ProductControllerIntegrationTest {
                 category.getId(),
                 10000,
                 10,
-                Status.SELLING
+                ProductStatus.SELLING
                 ,"테스트 상품 설명"
         );
 
@@ -147,7 +146,7 @@ class ProductControllerIntegrationTest {
                 null,
                 10000,
                 10,
-                Status.SELLING
+                ProductStatus.SELLING
                 ,"테스트 상품 설명"
         );
 
@@ -178,7 +177,7 @@ class ProductControllerIntegrationTest {
                 null,
                 10000,
                 10,
-                Status.SELLING
+                ProductStatus.SELLING
                 ,"테스트 상품 설명"
         );
 
@@ -251,7 +250,7 @@ class ProductControllerIntegrationTest {
                 .name("일반 전자기기")
                 .price(1000000)
                 .stock(10)
-                .status(Status.SELLING)
+                .status(ProductStatus.SELLING)
                 .build();
 
         ProductEntity p2 = ProductEntity.builder()
@@ -260,7 +259,7 @@ class ProductControllerIntegrationTest {
                 .name("게이밍 노트북")
                 .price(1010000)
                 .stock(10)
-                .status(Status.SELLING)
+                .status(ProductStatus.SELLING)
                 .build();
 
         productRepository.saveAll(List.of(p1, p2));
@@ -301,7 +300,7 @@ class ProductControllerIntegrationTest {
                 null,
                 10000,
                 10,
-                Status.SELLING
+                ProductStatus.SELLING
                 ,"테스트 상품 설명"
         );
 
@@ -334,6 +333,6 @@ class ProductControllerIntegrationTest {
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow();
 
-        assertThat(product.getStatus()).isEqualTo(Status.DELETED);
+        assertThat(product.getProductStatus()).isEqualTo(ProductStatus.DELETED);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.shop.product.dto.response;
 
-import com.example.shop.product.domain.Status;
+import com.example.shop.product.domain.ProductStatus;
 import lombok.*;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class ProductDetailResponse {
     private int price;
     private String description;
 
-    private Status status;
+    private ProductStatus productStatus;
 
     private List<ProductImageResponse> images;
 }

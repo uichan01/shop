@@ -1,6 +1,6 @@
 package com.example.shop.product.domain;
 
-public enum Status {
+public enum ProductStatus {
     SELLING,
     SOLD_OUT,
     HIDDEN,

@@ -56,7 +56,7 @@ public class CartServiceImpl implements CartService {
                     .findFirstByProductIdOrderBySortOrderAsc(product.getId())
                     .orElse(null);
 
-            //장바구니 요약정보 갱신
+            //장바구니 요약정보
             totalItemTypeCount++;
             totalQuantity += cartItem.getQuantity();
             totalPrice += product.getPrice() * cartItem.getQuantity();

@@ -5,7 +5,7 @@ import com.example.shop.cart.dto.request.UpdateCartItemRequest;
 import com.example.shop.cart.dto.response.CartInfoResponse;
 
 public interface CartService {
-    //본인 장바구니조회-유효성검증+총가격요약
+    //본인 장바구니조회
     public CartInfoResponse getMyCart(String username);
     //장바구니 상품추가
     public void addProductToMyCart(String username, AddCartItemRequest request);

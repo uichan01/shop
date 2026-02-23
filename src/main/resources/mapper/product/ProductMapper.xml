@@ -28,7 +28,7 @@
         AND pi.sort_order = 1
 
         <where>
-            p.status != 'DELETED'
+            p.productStatus != 'DELETED'
 
             <!-- 검색 옵션 -->
             <if test="request.keyword != null and request.keyword != ''">
@@ -44,7 +44,6 @@
             <if test="request.sellerId != null">
                 AND p.seller_id = #{request.sellerId}
             </if>
-            <!-- 검색 옵션 끝 -->
         </where>
 
         ORDER BY p.created_at DESC

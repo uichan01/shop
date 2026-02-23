@@ -43,33 +43,33 @@ public class ProductEntity {
 
     @Column(length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private ProductStatus productStatus;
 
     @Column(name = "created_at")
     @CreatedDate
     private LocalDateTime createdAt;
 
     @Builder
-    public ProductEntity(MemberEntity seller, CategoryEntity category, String name, int price, int stock, String description, Status status) {
+    public ProductEntity(MemberEntity seller, CategoryEntity category, String name, int price, int stock, String description, ProductStatus productStatus) {
         this.seller = seller;
         this.category = category;
         this.name = name;
         this.price = price;
         this.stock = stock;
         this.description = description;
-        this.status = status;
+        this.productStatus = productStatus;
     }
 
-    public void update(String name, Integer price, Integer stock, Status status, CategoryEntity category, String description) {
+    public void update(String name, Integer price, Integer stock, ProductStatus productStatus, CategoryEntity category, String description) {
         this.name = name;
         this.price = price;
         this.stock = stock;
-        this.status = status;
+        this.productStatus = productStatus;
         this.category = category;
         this.description = description;
     }
 
     public void delete() {
-        this.status = Status.DELETED;
+        this.productStatus = ProductStatus.DELETED;
     }
 }
