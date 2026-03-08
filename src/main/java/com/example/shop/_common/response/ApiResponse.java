@@ -8,7 +8,7 @@ import lombok.Getter;
 public class ApiResponse<T> {
     private boolean success;
     private int code;
-    private String meesage;
+    private String message;
     private T data;
 
     public static <T> ApiResponse<T> success(T data) {

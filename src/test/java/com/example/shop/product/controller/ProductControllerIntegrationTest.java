@@ -333,6 +333,6 @@ class ProductControllerIntegrationTest {
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow();
 
-        assertThat(product.getProductStatus()).isEqualTo(ProductStatus.DELETED);
+        assertThat(product.getStatus()).isEqualTo(ProductStatus.DELETED);
     }
 }

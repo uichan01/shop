@@ -28,7 +28,7 @@
         AND pi.sort_order = 1
 
         <where>
-            p.productStatus != 'DELETED'
+            p.status != 'DELETED'
 
             <!-- 검색 옵션 -->
             <if test="request.keyword != null and request.keyword != ''">

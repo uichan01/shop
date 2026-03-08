@@ -43,33 +43,44 @@ public class ProductEntity {
 
     @Column(length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    private ProductStatus productStatus;
+    private ProductStatus status;
 
     @Column(name = "created_at")
     @CreatedDate
     private LocalDateTime createdAt;
 
     @Builder
-    public ProductEntity(MemberEntity seller, CategoryEntity category, String name, int price, int stock, String description, ProductStatus productStatus) {
+    public ProductEntity(MemberEntity seller, CategoryEntity category, String name, int price, int stock, String description, ProductStatus status) {
         this.seller = seller;
         this.category = category;
         this.name = name;
         this.price = price;
         this.stock = stock;
         this.description = description;
-        this.productStatus = productStatus;
+        this.status = status;
     }
 
-    public void update(String name, Integer price, Integer stock, ProductStatus productStatus, CategoryEntity category, String description) {
+    public void update(String name, Integer price, Integer stock, ProductStatus status, CategoryEntity category, String description) {
         this.name = name;
         this.price = price;
         this.stock = stock;
-        this.productStatus = productStatus;
+        this.status = status;
         this.category = category;
         this.description = description;
     }
 
     public void delete() {
-        this.productStatus = ProductStatus.DELETED;
+        this.status = ProductStatus.DELETED;
+    }
+
+    public void decreaseStock(int quantity) {
+        if (this.stock < quantity) {
+            throw new IllegalStateException("재고가 부족합니다. 상품: " + this.name);
+        }
+        this.stock -= quantity;
+    }
+
+    public void increaseStock(int quantity) {
+        this.stock += quantity;
     }
 }

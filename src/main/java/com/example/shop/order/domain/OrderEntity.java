@@ -2,6 +2,7 @@ package com.example.shop.order.domain;
 
 import com.example.shop.member.domain.MemberEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,7 +19,7 @@ public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -27,17 +28,21 @@ public class OrderEntity {
     @Column(name = "order_number", nullable = false, length = 50)
     private String orderNumber;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 255)
     private String address;
 
     @Column(name = "total_price", nullable = false)
     private int totalPrice;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private OrderStatus status;
-
     @Column(name = "created_at")
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @Builder
+    public OrderEntity(MemberEntity member, String orderNumber, String address, int totalPrice) {
+        this.member = member;
+        this.orderNumber = orderNumber;
+        this.address = address;
+        this.totalPrice = totalPrice;
+    }
 }

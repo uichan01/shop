@@ -168,7 +168,7 @@ public class ProductServiceImpl implements ProductService {
                 .name(productEntity.getName())
                 .price(productEntity.getPrice())
                 .description(productEntity.getDescription())
-                .productStatus(productEntity.getProductStatus())
+                .productStatus(productEntity.getStatus())
                 .images(imageResponses)
                 .build();
 
