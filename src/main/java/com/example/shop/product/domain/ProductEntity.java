@@ -72,15 +72,4 @@ public class ProductEntity {
     public void delete() {
         this.status = ProductStatus.DELETED;
     }
-
-    public void decreaseStock(int quantity) {
-        if (this.stock < quantity) {
-            throw new IllegalStateException("재고가 부족합니다. 상품: " + this.name);
-        }
-        this.stock -= quantity;
-    }
-
-    public void increaseStock(int quantity) {
-        this.stock += quantity;
-    }
 }

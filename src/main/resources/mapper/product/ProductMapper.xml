@@ -49,4 +49,17 @@
         ORDER BY p.created_at DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
+
+    <update id="decreaseStock">
+        UPDATE products p
+        SET stock = stock - #{quantity}
+        where id = #{id}
+        and stock > #{quantity}
+    </update>
+
+    <update id="increaseStock">
+        UPDATE products
+        SET stock = stock + #{quantity}
+        WHERE id = #{id}
+    </update>
 </mapper>

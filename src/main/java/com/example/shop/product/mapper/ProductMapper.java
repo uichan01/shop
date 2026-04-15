@@ -14,4 +14,7 @@ public interface ProductMapper {
             @Param("limit") int limit,
             @Param("request") SearchOptionRequest request
     );
+
+    int increaseStock(@Param("id") Long id, @Param("quantity") int quantity);
+    int decreaseStock(@Param("id") Long id, @Param("quantity") int quantity);
 }

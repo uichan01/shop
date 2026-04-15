@@ -14,6 +14,7 @@ import com.example.shop.order.dto.response.OrderResultResponse;
 import com.example.shop.order.repository.OrderItemRepository;
 import com.example.shop.order.repository.OrderRepository;
 import com.example.shop.product.domain.ProductEntity;
+import com.example.shop.product.mapper.ProductMapper;
 import com.example.shop.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
     @Override
     @Transactional
@@ -52,7 +54,11 @@ public class OrderServiceImpl implements OrderService {
         for (CartItemEntity cartItem : cartItems) {
             ProductEntity product = productRepository.findById(cartItem.getProduct().getId())
                     .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
-            product.decreaseStock(cartItem.getQuantity());
+
+            if (0 == productMapper.decreaseStock(product.getId(), cartItem.getQuantity())) {
+                throw new IllegalStateException("재고가 부족합니다.");
+            }
+
             totalPrice += product.getPrice() * cartItem.getQuantity();
         }
 
@@ -127,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
 
         ProductEntity product = productRepository.findById(item.getProduct().getId())
                 .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
-        product.increaseStock(item.getQuantity());
+        productMapper.increaseStock(item.getProduct().getId(), item.getQuantity());
         item.cancel();
     }
 
