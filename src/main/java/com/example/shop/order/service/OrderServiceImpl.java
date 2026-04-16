@@ -55,7 +55,9 @@ public class OrderServiceImpl implements OrderService {
             ProductEntity product = productRepository.findById(cartItem.getProduct().getId())
                     .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
 
-            if (0 == productMapper.decreaseStock(product.getId(), cartItem.getQuantity())) {
+            int updatedRow = productMapper.decreaseStock(product.getId(), cartItem.getQuantity());
+
+            if (updatedRow == 0) {
                 throw new IllegalStateException("재고가 부족합니다.");
             }
 

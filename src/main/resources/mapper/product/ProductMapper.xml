@@ -54,7 +54,7 @@
         UPDATE products p
         SET stock = stock - #{quantity}
         where id = #{id}
-        and stock > #{quantity}
+        and stock >= #{quantity}
     </update>
 
     <update id="increaseStock">

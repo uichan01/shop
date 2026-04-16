@@ -219,6 +219,34 @@ public class OrderControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("상품 주문 실패 - 재고수량 0 이하")
+    void createOrderWithNoStock() throws Exception {
+        // given: 재고 5개인 상품 생성, member가 장바구니에 4개 담고 첫 번째 주문 완료 (재고: 5 → 1)
+        MemberEntity member = saveTestMember();
+        MemberEntity seller = saveSeller();
+        CategoryEntity category = saveCategory("카테고리1");
+        ProductEntity product = saveProduct(seller, category, "재고부족상품", 10000, 5);
+        addToCart(member, product, 4);
+        Map<String, String> request = Map.of("address", "서울시 강남구 테헤란로 123");
+        mockMvc.perform(post("/order")
+                        .with(authentication(buildAuthentication(member)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // when: 남은 재고(1개)보다 많은 수량(3개)을 장바구니에 담고 주문 시도
+        cartItemRepository.flush();
+        addToCart(member, product, 3);
+
+        // then: decreaseStock WHERE stock >= quantity 불충족 → IllegalStateException("재고가 부족합니다.") → 400 반환
+        mockMvc.perform(post("/order")
+                        .with(authentication(buildAuthentication(member)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("주문 단건 조회")
     void getOrder() throws Exception {
         // given: member 로그인 상태, 장바구니에 상품 담고 주문 생성 완료
